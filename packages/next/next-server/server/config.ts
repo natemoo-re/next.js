@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import findUp from 'find-up'
 import os from 'os'
 import { basename, extname } from 'path'
-
+import webpack from 'webpack'
 import { CONFIG_FILE } from '../lib/constants'
 import { execOnce } from '../lib/utils'
 
@@ -15,6 +15,18 @@ const targets: NextTarget[] = [
   'serverless',
   'experimental-serverless-trace',
 ]
+
+interface Webpack {
+  (options: webpack.Configuration, handler: webpack.Compiler.Handler):
+    | webpack.Compiler.Watching
+    | webpack.Compiler
+  (options?: webpack.Configuration): webpack.Compiler
+
+  (options: webpack.Configuration[], handler: webpack.MultiCompiler.Handler):
+    | webpack.MultiWatching
+    | webpack.MultiCompiler
+  (options: webpack.Configuration[]): webpack.MultiCompiler
+}
 
 export type ReactMode = 'legacy' | 'blocking' | 'concurrent'
 const reactModes: ReactMode[] = ['legacy', 'blocking', 'concurrent']
@@ -41,7 +53,7 @@ export interface NextFuture {
 
 export interface NextConfig {
   env?: any[]
-  webpack?: any
+  webpack?: Webpack
   webpackDevMiddleware?: any
   distDir?: string
   assetPrefix?: string
@@ -75,7 +87,7 @@ export interface NextConfig {
 
 const defaultConfig: NextConfig = {
   env: [],
-  webpack: null,
+  webpack: null as any,
   webpackDevMiddleware: null,
   distDir: '.next',
   assetPrefix: '',
@@ -187,7 +199,9 @@ export default function loadConfig(
   if (customConfig) {
     return assignDefaults({ configOrigin: 'server', ...customConfig })
   }
-  const path = findUp.sync(CONFIG_FILE, {
+
+  const configBaseName = basename(CONFIG_FILE, extname(CONFIG_FILE))
+  const path = findUp.sync([`${configBaseName}.js`, `${configBaseName}.ts`], {
     cwd: dir,
   })
 
@@ -247,7 +261,6 @@ export default function loadConfig(
     const nonJsPath = findUp.sync(
       [
         `${configBaseName}.jsx`,
-        `${configBaseName}.ts`,
         `${configBaseName}.tsx`,
         `${configBaseName}.json`,
       ],
@@ -257,7 +270,7 @@ export default function loadConfig(
       throw new Error(
         `Configuring Next.js via '${basename(
           nonJsPath
-        )}' is not supported. Please replace the file with 'next.config.js'.`
+        )}' is not supported. Please replace the file with 'next.config.js' or 'next.config.ts'.`
       )
     }
   }
