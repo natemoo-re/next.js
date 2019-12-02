@@ -6,10 +6,74 @@ import { basename, extname } from 'path'
 import { CONFIG_FILE } from '../lib/constants'
 import { execOnce } from '../lib/utils'
 
-const targets = ['server', 'serverless', 'experimental-serverless-trace']
-const reactModes = ['legacy', 'blocking', 'concurrent']
+export type NextTarget =
+  | 'server'
+  | 'serverless'
+  | 'experimental-serverless-trace'
+const targets: NextTarget[] = [
+  'server',
+  'serverless',
+  'experimental-serverless-trace',
+]
 
-const defaultConfig: { [key: string]: any } = {
+export type ReactMode = 'legacy' | 'blocking' | 'concurrent'
+const reactModes: ReactMode[] = ['legacy', 'blocking', 'concurrent']
+
+export interface NextExperimental {
+  ampBindInitData?: boolean
+  cpus?: number
+  catchAllRouting?: boolean
+  css?: boolean
+  documentMiddleware?: boolean
+  granularChunks?: boolean
+  modern?: boolean
+  plugins?: boolean
+  profiling?: boolean
+  sprFlushToDisk?: boolean
+  deferScripts?: boolean
+  reactMode?: ReactMode
+  workerThreads?: boolean
+}
+
+export interface NextFuture {
+  excludeDefaultMomentLocales?: false
+}
+
+export interface NextConfig {
+  env?: any[]
+  webpack?: any
+  webpackDevMiddleware?: any
+  distDir?: string
+  assetPrefix?: string
+  configOrigin?: string
+  useFileSystemPublicRoutes?: boolean
+  generateBuildId?: () => number | string | null | void
+  generateEtags?: boolean
+  pageExtensions?: string[]
+  target?: NextTarget
+  poweredByHeader?: boolean
+  compress?: boolean
+  devIndicators?: {
+    buildActivity?: boolean
+    autoPrerender?: boolean
+  }
+  onDemandEntries?: {
+    maxInactiveAge?: number
+    pagesBufferLength?: number
+  }
+  amp?: {
+    canonicalBase?: string
+  }
+  exportTrailingSlash?: boolean
+  experimental?: NextExperimental
+  future?: NextFuture
+  serverRuntimeConfig?: { [key: string]: any }
+  publicRuntimeConfig?: { [key: string]: any }
+  reactStrictMode?: false
+  [key: string]: any
+}
+
+const defaultConfig: NextConfig = {
   env: [],
   webpack: null,
   webpackDevMiddleware: null,
